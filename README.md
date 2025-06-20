@@ -1,6 +1,6 @@
 # 📝 Editor de XML para Pedidos
 
-Este projeto é um aplicativo Python com interface gráfica (**Tkinter**) para consulta de pedidos via API da **BC Ferramentaria**, exibição e alteração de dados do XML da nota fiscal e geração de arquivo JSON para registro.  
+Este projeto é um aplicativo Python com interface gráfica (**Tkinter**) para consulta de pedidos via API, exibição e alteração de dados do XML da nota fiscal e geração de arquivo JSON para registro.  
 
 O resultado é salvo em `.txt` e aberto automaticamente no Bloco de Notas para conferência.
 
