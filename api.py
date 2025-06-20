@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 import subprocess
 from tkinter import Tk, Label, Entry, Button, Checkbutton, IntVar, StringVar, DISABLED, NORMAL, messagebox
 import os
+
 def processar_xml(xml_content, alteracoes, status_label):
     ns = {'nfe': 'http://www.portalfiscal.inf.br/nfe'}
     ET.register_namespace('', ns['nfe'])
@@ -19,13 +20,7 @@ def processar_xml(xml_content, alteracoes, status_label):
             elem.text = alteracoes['UF']
 
     xml_modificado_str = ET.tostring(root, encoding='unicode')
-
-    #parte que gera um xml
-    #with open('xml_modificado.txt', 'w', encoding='utf-8') as f:
-     #   f.write(xml_modificado_str)
-
     gerar_json_e_salvar_txt(xml_modificado_str)
-
     status_label.set("Documento salvo com sucesso!")
 
 def gerar_json_e_salvar_txt(xml_modificado_str):
@@ -54,8 +49,6 @@ def gerar_json_e_salvar_txt(xml_modificado_str):
         f.write(json_str)
 
     print(f"Arquivo salvo como {nome_arquivo}")
-
-    # Abre no bloco de notas
     subprocess.Popen(['notepad.exe', nome_arquivo])
 
 def buscar_pedido(numero_pedido):
@@ -97,16 +90,48 @@ def abrir_tela_pedido():
     root.mainloop()
 
 def abrir_tela_edicao(xml_content):
+    root_xml = ET.fromstring(xml_content)
+    ns = {'nfe': 'http://www.portalfiscal.inf.br/nfe'}
+
+    nome_cliente = root_xml.find('.//nfe:dest/nfe:xNome', ns)
+    cep_atual = root_xml.find('.//nfe:dest/nfe:enderDest/nfe:CEP', ns)
+    xmun_atual = root_xml.find('.//nfe:dest/nfe:enderDest/nfe:xMun', ns)
+    uf_atual = root_xml.find('.//nfe:dest/nfe:enderDest/nfe:UF', ns)
+
+    nome_cliente = nome_cliente.text if nome_cliente is not None else ""
+    cep_atual = cep_atual.text if cep_atual is not None else ""
+    xmun_atual = xmun_atual.text if xmun_atual is not None else ""
+    uf_atual = uf_atual.text if uf_atual is not None else ""
+
     root = Tk()
     root.title("Editor de XML")
 
     status = StringVar()
     status.set("Pedido carregado com sucesso.")
 
-    def atualizar_campos():
-        entry_cep.config(state=NORMAL if var_cep.get() else DISABLED)
-        entry_xmun.config(state=NORMAL if var_xmun.get() else DISABLED)
-        entry_uf.config(state=NORMAL if var_uf.get() else DISABLED)
+    Label(root, text=f"Nome do Cliente: {nome_cliente}", font=("Arial", 10, "bold")).grid(row=0, column=0, columnspan=2, pady=(10, 0))
+    Label(root, text=f"CEP atual: {cep_atual}", font=("Arial", 10)).grid(row=1, column=0, columnspan=2)
+    Label(root, text=f"Município atual: {xmun_atual}", font=("Arial", 10)).grid(row=2, column=0, columnspan=2)
+    Label(root, text=f"UF atual: {uf_atual}", font=("Arial", 10)).grid(row=3, column=0, columnspan=2)
+
+    var_cep = IntVar()
+    var_xmun = IntVar()
+    var_uf = IntVar()
+
+    Checkbutton(root, text="Alterar CEP", variable=var_cep,
+                command=lambda: entry_cep.config(state=NORMAL if var_cep.get() else DISABLED)).grid(row=4, column=0, sticky='w', padx=10)
+    entry_cep = Entry(root, width=30, state=DISABLED)
+    entry_cep.grid(row=4, column=1, padx=10, pady=5)
+
+    Checkbutton(root, text="Alterar Município", variable=var_xmun,
+                command=lambda: entry_xmun.config(state=NORMAL if var_xmun.get() else DISABLED)).grid(row=5, column=0, sticky='w', padx=10)
+    entry_xmun = Entry(root, width=30, state=DISABLED)
+    entry_xmun.grid(row=5, column=1, padx=10, pady=5)
+
+    Checkbutton(root, text="Alterar UF", variable=var_uf,
+                command=lambda: entry_uf.config(state=NORMAL if var_uf.get() else DISABLED)).grid(row=6, column=0, sticky='w', padx=10)
+    entry_uf = Entry(root, width=30, state=DISABLED)
+    entry_uf.grid(row=6, column=1, padx=10, pady=5)
 
     def ao_clicar():
         alteracoes = {}
@@ -123,27 +148,9 @@ def abrir_tela_edicao(xml_content):
 
         processar_xml(xml_content, alteracoes, status)
 
-    Label(root, text="Marque e altere os campos desejados:", font=("Arial", 12)).grid(row=0, column=0, columnspan=2, pady=10)
+    Button(root, text="Salvar Documento Modificado", bg="#4CAF50", fg="white", command=ao_clicar).grid(row=7, column=0, columnspan=2, pady=15)
 
-    var_cep = IntVar()
-    var_xmun = IntVar()
-    var_uf = IntVar()
-
-    Checkbutton(root, text="CEP", variable=var_cep, command=atualizar_campos).grid(row=1, column=0, sticky='w', padx=10)
-    entry_cep = Entry(root, width=30, state=DISABLED)
-    entry_cep.grid(row=1, column=1, padx=10, pady=5)
-
-    Checkbutton(root, text="xMun", variable=var_xmun, command=atualizar_campos).grid(row=2, column=0, sticky='w', padx=10)
-    entry_xmun = Entry(root, width=30, state=DISABLED)
-    entry_xmun.grid(row=2, column=1, padx=10, pady=5)
-
-    Checkbutton(root, text="UF", variable=var_uf, command=atualizar_campos).grid(row=3, column=0, sticky='w', padx=10)
-    entry_uf = Entry(root, width=30, state=DISABLED)
-    entry_uf.grid(row=3, column=1, padx=10, pady=5)
-
-    Button(root, text="Salvar Documento Modificado", bg="#4CAF50", fg="white", command=ao_clicar).grid(row=4, column=0, columnspan=2, pady=15)
-
-    Label(root, textvariable=status, fg="blue", font=("Arial", 10)).grid(row=5, column=0, columnspan=2, pady=5)
+    Label(root, textvariable=status, fg="blue", font=("Arial", 10)).grid(row=8, column=0, columnspan=2, pady=5)
 
     root.mainloop()
 
@@ -152,14 +159,8 @@ USUARIO = os.getenv("API_USER")
 SENHA = os.getenv("API_PASS")
 URL_BASE = os.getenv("API_URL")
 
-
 if not USUARIO or not SENHA or not URL_BASE:
     raise ValueError("API_USER, API_PASS ou API_URL não estão definidos no ambiente.")
-if not URL_BASE:
-    raise ValueError("A variável de ambiente API_URL não está definida.")
-
 
 # Inicia
 abrir_tela_pedido()
-
-
