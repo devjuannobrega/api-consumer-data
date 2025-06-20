@@ -59,7 +59,7 @@ def gerar_json_e_salvar_txt(xml_modificado_str):
     subprocess.Popen(['notepad.exe', nome_arquivo])
 
 def buscar_pedido(numero_pedido):
-    url = os.getenv("API_URL"),{numero_pedido}
+    url = f"{os.getenv('API_URL')}/{numero_pedido}"
     response = requests.get(url, auth=(os.getenv("API_USER"), os.getenv("API_PASS")))
 
     if response.status_code == 200:
