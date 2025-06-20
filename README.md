@@ -33,4 +33,4 @@ O resultado é salvo em `.txt` e aberto automaticamente no Bloco de Notas para c
 ```bash
 set API_USER=seu_usuario
 set API_PASS=sua_senha
-set API_URL=https://sua_url/api/v2/pedidos
+set API_URL=https://sua_url/
